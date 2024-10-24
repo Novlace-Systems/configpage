@@ -1,140 +1,172 @@
 import React, { useState } from 'react';
-import { User, MessageCircle, MessageCircleHeart, Home } from 'lucide-react';
+import { HouseIcon, MessageCircleHeart, User, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 import './App.css';
 
 const EditProfile = () => {
-  const [isPasswordDisabled, setIsPasswordDisabled] = useState(false); // Campo de senha inicialmente habilitado
-  const [showWarning, setShowWarning] = useState(false); // Controle da exibição da mensagem
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    senha: ''
+  });
 
-  const handlePasswordClick = () => {
-    // Mostra uma caixa de diálogo quando o usuário clica no campo de senha
-    if (!isPasswordDisabled) { // Apenas se o campo ainda estiver habilitado
-      const confirmChange = window.confirm("Deseja alterar a senha?");
-      if (confirmChange) {
-        setIsPasswordDisabled(true); // Desabilita o campo de senha
-        setShowWarning(true); // Exibe a mensagem de aviso
-      }
+  const [errors, setErrors] = useState({});
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [customAvatar, setCustomAvatar] = useState(null);
+
+  const dragons = [
+    { id: 1, color: 'orange', src: './DragaoRoxoa.png' },
+    { id: 2, color: 'purple', src: './DragaoLaranjaa.png' },
+    { id: 3, color: 'pink', src: './DragaoAzula.png' },
+    { id: 4, color: 'pink', src: './DragaoPretoa.png' }
+  ];
+
+  // Validação de formulário
+  const validateForm = () => {
+    let tempErrors = {};
+    if (!formData.nome.trim()) {
+      tempErrors.nome = 'Nome é obrigatório';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      tempErrors.email = 'Email inválido';
+    }
+
+    if (formData.senha.length < 6) {
+      tempErrors.senha = 'Senha deve ter no mínimo 6 caracteres';
+    }
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  // Handler para upload de avatar personalizado
+  const handleCustomAvatarUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCustomAvatar(reader.result);
+        setSelectedAvatar('custom');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handler para salvar
+  const handleSave = () => {
+    if (validateForm()) {
+      console.log('Formulário válido, dados:', { ...formData, avatar: selectedAvatar });
+      // Aqui você adicionaria a lógica para salvar os dados
     }
   };
 
   return (
     <div className="edit-profile-container">
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div className="logo">
-          <img src='logoaelin.png' className='logo-aelin' alt="Logo"/>
-        </div>
-        <div className="menu-items">
+      <motion.div 
+        className="sidebar"
+        initial={{ x: -100 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <img src="/logo.png" alt="Logo" className="logo" />
+
+
+
+        <div className="nav-items">
           <button className="menu-button">
-            <Home className='icon-menu' />
+            <HouseIcon className="icon-menu" />
           </button>
           <button className="menu-button">
-            <MessageCircleHeart className='icon-menu'/>
-          </button>
-          <button className="menu-button">
-            <MessageCircle className='icon-menu' />
+            <MessageCircleHeart className="icon-menu" />
           </button>
           <button className="menu-button-active">
             <User className="user-icon" />
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Main Content */}
-      <div className="main-content">
+      <motion.div 
+        className="main-content"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+
+        <div className='container-items'>
         <h1 className="title">Editar Perfil</h1>
 
-        <div className="profile-form">
-          <div className="form-group">
-            <User className="form-icon" />
-            <div className="form-row">
-              <div className="form-item">
-                <label className="form-label">User name</label>
-                <input type="text" className="form-input" defaultValue="Anna Clara" />
-              </div>
-              <div className="form-item">
-                <label className="form-label"> Interação</label>
-                <input type="text" className="form-input" defaultValue="Eu gosto de animais, principalmente cachorrinhos." />
-              </div>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-item">
-              <label className="form-label">Nome</label>
-              <input type="text" className="form-input" defaultValue="Anna Clara" />
-            </div>
-            <div className="form-item">
-              <label className="form-label">Sobrenome</label>
-              <input type="text" className="form-input" defaultValue="Machado Batista" />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-item">
-              <label className="form-label">Email</label>
-              <input type="email" className="form-input" defaultValue="annalamey@gmail.com" />
-            </div>
-            <div className="form-item">
-              <label className="form-label">Senha</label>
-              <input 
-                type="password" 
-                className="form-input" 
-                disabled={isPasswordDisabled} 
-                defaultValue="flyetbeautlwk2167" 
-                onClick={handlePasswordClick} // Aqui é quando o usuário clica no campo de senha e exibe a mensagem
+        <div className="content-wrapper">
+          <div className="form-section">
+            <div className="form-group">
+              <label>Nome de Usuário</label>
+              <input
+                type="text"
+                value={formData.nome}
+                onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                className={`input-field ${errors.nome ? 'error' : ''}`}
               />
-              {showWarning && (
-                <p className="warning-text">
-                  Verifique seu email para alterar a senha.
-                </p>
-              )}
+              {errors.nome && <span className="error-message">{errors.nome}</span>}
+            </div>
+
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className={`input-field ${errors.email ? 'error' : ''}`}
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <label>Senha</label>
+              <input
+                type="password"
+                value={formData.senha}
+                onChange={(e) => setFormData({...formData, senha: e.target.value})}
+                className={`input-field ${errors.senha ? 'error' : ''}`}
+              />
+              {errors.senha && <span className="error-message">{errors.senha}</span>}
             </div>
           </div>
 
-          <div className="form-row">
-            <div className="form-item">
-              <label className="form-label">Telefone</label>
-              <input type="tel" className="form-input" defaultValue="11 95759-2828" />
+          <div className="avatar-section">
+            <h2>Escolha seu avatar:</h2>
+            <div className="avatar-grid">
+              {dragons.map((dragon) => (
+                <motion.button
+                  key={dragon.id}
+                  className={`avatar-button ${selectedAvatar === dragon.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedAvatar(dragon.id)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <img src={dragon.src} alt={`Dragon ${dragon.id}`} />
+                </motion.button>
+              ))}
             </div>
-            <div className="form-item">
-              <label className="form-label">Endereço</label>
-              <input type="text" className="form-input" defaultValue="Rua das Begônias" />
-            </div>
-          </div>
 
-          <div className="form-row">
-            <div className="form-item">
-              <label className="form-label">Número</label>
-              <input type="text" className="form-input" defaultValue="312" />
-            </div>
-            <div className="form-item">
-              <label className="form-label">Bairro</label>
-              <input type="text" className="form-input" defaultValue="Jardim América" />
-            </div>
-            <div className="form-item">
-              <label className="form-label">Cidade</label>
-              <input type="text" className="form-input" defaultValue="Arujá" />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-item">
-              <label className="form-label">UF</label>
-              <input type="text" className="form-input" defaultValue="SP" />
-            </div>
-            <div className="form-item">
-              <label className="form-label">CEP</label>
-              <input type="text" className="form-input" defaultValue="08582-335" />
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button className="save-button">Salvar</button>
           </div>
         </div>
-      </div>
+        
+
+        <motion.button 
+          className="save-button"
+          onClick={handleSave}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Salvar
+        </motion.button>
+        </div>
+      </motion.div>
+      
     </div>
+    
+    
   );
 };
 
